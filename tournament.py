@@ -12,49 +12,11 @@ def connect():
     """Connect to the PostgreSQL database.  Returns a database connection."""
     return psycopg2.connect("dbname=tournament")
 
-def initiateStandings():
-    """Initiate the standings table"""
-    conn = connect()
-    cursor = conn.cursor()
-    cursor.execute("select id from players")
-    results = cursor.fetchall()
-    cursor.execute("delete from standings")
-    for index in range(len(results)):
-        cursor.execute(
-            "insert into standings (id, played, wins) values (%s , 0, 0)" , (results[index],))
-    conn.commit()
-    conn.close()
-
-def updateStandings(winner , loser):
-    """ Update the standings table on every match completion"""
-    
-
-    conn = connect()
-    cursor = conn.cursor()
-    cursor.execute("select played, wins from standings where id = %s" , (winner,))
-    results = cursor.fetchone()
-    played = results[0] + 1
-    wins = results [1] + 1
-    cursor.execute("update standings set  played = %s,  wins = %s where standings.id = %s" , (played, wins, winner))    
-    conn.commit()
-    cursor.execute("select played, wins from standings where id = %s" , (loser,))
-    results = cursor.fetchone()
-    played = results[0] + 1
-    wins = results [1]
-    cursor.execute("update standings set  played = %s,  wins = %s where standings.id = %s" , (played, wins, loser))    
-    conn.commit()
-    conn.close()
-
-
-
-
-
 def deleteMatches():
     """Remove all the match records from the database."""
     conn = connect()
     cursor = conn.cursor()
-    cursor.execute("delete from matches")
-    initiateStandings()
+    cursor.execute("DELETE FROM matches")
     conn.commit()
     conn.close() 
       
@@ -64,8 +26,7 @@ def deletePlayers():
 
     conn = connect()
     cursor = conn.cursor()
-    cursor.execute("delete from players")
-    cursor.execute("delete from standings")
+    cursor.execute("DELETE FROM players")
     conn.commit()
     conn.close() 
     
@@ -74,7 +35,7 @@ def countPlayers():
     """Returns the number of players currently registered."""
     conn = connect()
     cursor = conn.cursor()
-    cursor.execute("select count(name) from players")
+    cursor.execute("SELECT COUNT(name) FROM players")
     results = cursor.fetchone()
     conn.close()
     return(results[0])
@@ -91,12 +52,7 @@ def registerPlayer(name):
     """
     conn = connect()
     cursor = conn.cursor()
-    cursor.execute("insert into players (name) values (%s)" , (name,))
-    conn.commit()
-    cursor.execute("select id from players order by id DESC")
-    results = cursor.fetchone()
-    cursor.execute(
-            "insert into standings (id, played, wins) values (%s , 0, 0)" , (results[0],))
+    cursor.execute("INSERT INTO players (name) VALUES (%s)" , (name,))
     conn.commit()
     conn.close()
     
@@ -117,7 +73,7 @@ def playerStandings():
     """
     conn = connect()
     cursor = conn.cursor()
-    cursor.execute("select players.id as id, name, wins, played from players join standings on players.id = standings.id order by wins")
+    cursor.execute("SELECT wins.id, wins.name, wins, (wins+defeats) as matches from wins join defeats on wins.id = defeats.id")
     standings = cursor.fetchall()
     conn.close() 
     return standings
@@ -133,14 +89,12 @@ def reportMatch(winner, loser):
     """
     
 
-    text1 = str(winner) + " VS " + str(loser)
-    
     conn = connect()
     cursor = conn.cursor()
-    cursor.execute("insert into matches values (%s, %s, %s)" , (text1, winner, loser))
+    cursor.execute("INSERT INTO matches (winner,loser) VALUES (%s, %s)" , (winner, loser))
     conn.commit()
     conn.close()
-    updateStandings(winner,loser) 
+    
     
 
 
@@ -162,7 +116,7 @@ def swissPairings():
     """
     conn = connect()
     cursor = conn.cursor()
-    cursor.execute("select standings.id, name from standings join players on players.id = standings.id order by wins desc;")
+    cursor.execute("SELECT id, name FROM wins;")
     pairings = []
     for row in cursor:
         
@@ -179,9 +133,3 @@ def swissPairings():
            result.append(temptuple)
            temptuple =[]
     return result
-
-
-
-
-
-
