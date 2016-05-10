@@ -7,7 +7,9 @@
 -- these lines here.
 
 
-create database tournament;
+DROP DATABASE IF EXISTS tournament;
+CREATE DATABASE tournament;
+\c tournament;
 
 CREATE TABLE players(
 	 id serial PRIMARY KEY,
