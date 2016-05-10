@@ -11,8 +11,7 @@ set of matches according to the Swiss System
 Installation
 ------------
 
-Install Swiss System Tournament by intiating Tables and Views as in tournament.sql
-and then running tournament.py
+Run the Swiss System Tournament apllication by first navigating to the container folder and creating the database schema by typing psql -ftournament.sql, then you can execute the tests module by typing python tournament_test.py on system's command line
 
 
 
